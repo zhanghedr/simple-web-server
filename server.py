@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+import sys
+import logging
 import subprocess
 from http.server import HTTPServer, SimpleHTTPRequestHandler, HTTPStatus
 
@@ -32,9 +34,7 @@ class HTTPRequestHandler(SimpleHTTPRequestHandler):
         </head>
         <body>
             <h2>Directory list</h2>
-            <ul>
-                {}
-            </ul>
+            <ul>{}</ul>
         </body>
     </html>
     """
@@ -44,7 +44,7 @@ class HTTPRequestHandler(SimpleHTTPRequestHandler):
 
         # use parent method to convert relative path to system path
         self.full_path = self.translate_path(self.path)
-        # chain of helpers in order. Can easily add more
+        # chain of helpers. Can easily be extended
         helpers = [NotFoundHelper(),
                    CGIHelper(),
                    FoundFileHelper(),
@@ -100,7 +100,12 @@ class HTTPRequestHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    server_address = ('', 8080)
+    server_address = ('127.0.0.1', 8080)
     # replace with SimpleHTTPRequestHandler to see parent handler
     httpd = HTTPServer(server_address, HTTPRequestHandler)
-    httpd.serve_forever()
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.info("HTTP Server is running on %s:%s" % server_address)
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        logging.info('Exit')
